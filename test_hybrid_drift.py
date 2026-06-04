@@ -5,6 +5,7 @@ Simulates the Hybrid CBO Architecture without FAISS.
 Tests Size Drift (Abrupt Reset) and Content Drift (Continual Learning).
 """
 
+import argparse
 import random
 import logging
 from cbo.optimizer import ContextualBanditOptimizer
@@ -37,8 +38,12 @@ def simulate_queries(optimizer, n_queries: int, bf_latency_multiplier: float = 1
         yield i, optimizer.is_frozen
 
 def main():
-    logger.info("Initializing CBO with N=200_000")
-    optimizer = ContextualBanditOptimizer(n_corpus=200_000, mode="epsilon_greedy", continual_epsilon=0.01)
+    parser = argparse.ArgumentParser(description="Test Hybrid Drift in CBO")
+    parser.add_argument("--size", type=int, default=200_000, help="Initial corpus size (N) for the optimizer")
+    args = parser.parse_args()
+
+    logger.info("Initializing CBO with N=%d", args.size)
+    optimizer = ContextualBanditOptimizer(n_corpus=args.size, mode="epsilon_greedy", continual_epsilon=0.01)
     
     # ── Phase 1: Normal Learning ──────────────────────────────────────────────
     logger.info("--- PHASE 1: Normal Learning ---")
@@ -54,8 +59,9 @@ def main():
         return
         
     # ── Phase 2: Size Drift (Abrupt Reset) ────────────────────────────────────
-    logger.info("--- PHASE 2: Size Drift (N jumps to 265_000) ---")
-    unfroze = optimizer.update_corpus_size(265_000)
+    new_size = int(args.size * 1.35) # Increase size by 35% to force abrupt reset
+    logger.info("--- PHASE 2: Size Drift (N jumps to %d) ---", new_size)
+    unfroze = optimizer.update_corpus_size(new_size)
     if unfroze:
         logger.info("SUCCESS: Optimizer successfully unfroze due to Size Drift.")
     else:
@@ -70,7 +76,7 @@ def main():
             
     # ── Phase 3: Content Drift (Continual Learning Trigger) ───────────────────
     logger.info("--- PHASE 3: Content Drift (Brute-Force gets 5x slower) ---")
-    logger.info("CBO is currently frozen. 1% Continual Learning will explore the background...")
+    logger.info("CBO is currently frozen. 1%% Continual Learning will explore the background...")
     
     # We run up to 50,000 queries. Since epsilon=0.01, it will explore ~500 times.
     # We want to see if it detects that BruteForce is now terrible and unfreezes.

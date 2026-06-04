@@ -189,10 +189,10 @@ def run_test(sample_ratios: list[float] = None):
 
         logger.info("\n--- Aggregate Metrics (ratio=%.0f%%) ---", ratio * 100)
         logger.info("  Filters tested     : %d", agg.n_filters)
-        logger.info("  MAE                : %.4f (%.2f puan)", agg.mae, agg.mae * 100)
+        logger.info("  MAE                : %.4f (%.2f percentage points)", agg.mae, agg.mae * 100)
         logger.info("  MAPE               : %.2f%%", agg.mape_pct)
-        logger.info("  Max Absolute Error : %.4f (%.2f puan)", agg.max_abs_error, agg.max_abs_error * 100)
-        logger.info("  Median Abs Error   : %.4f (%.2f puan)", agg.median_abs_error, agg.median_abs_error * 100)
+        logger.info("  Max Absolute Error : %.4f (%.2f percentage points)", agg.max_abs_error, agg.max_abs_error * 100)
+        logger.info("  Median Abs Error   : %.4f (%.2f percentage points)", agg.median_abs_error, agg.median_abs_error * 100)
         logger.info("  Median Time        : %.1f µs", agg.median_estimation_us)
         logger.info("  P99 Time           : %.1f µs", agg.p99_estimation_us)
 
@@ -208,7 +208,7 @@ def run_test(sample_ratios: list[float] = None):
             errs = by_range.get(bucket, [])
             if errs:
                 mae = np.mean(errs)
-                logger.info("  %s : MAE=%.4f (%.2f puan), n=%d",
+                logger.info("  %s : MAE=%.4f (%.2f percentage points), n=%d",
                             bucket, mae, mae * 100, len(errs))
                 range_breakdown[bucket] = {
                     "mae": round(float(mae), 6),
@@ -224,7 +224,7 @@ def run_test(sample_ratios: list[float] = None):
         type_breakdown = {}
         for ftype, errs in sorted(by_type.items()):
             mae = np.mean(errs)
-            logger.info("  %-10s : MAE=%.4f (%.2f puan), n=%d",
+            logger.info("  %-10s : MAE=%.4f (%.2f percentage points), n=%d",
                         ftype, mae, mae * 100, len(errs))
             type_breakdown[ftype] = {
                 "mae": round(float(mae), 6),
